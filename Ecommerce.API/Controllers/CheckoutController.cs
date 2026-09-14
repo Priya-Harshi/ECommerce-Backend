@@ -1,5 +1,4 @@
 ﻿using Ecommerce.API.Hubs;
-using Ecommerce.Business.Services;
 using Ecommerce.Business.Services.Interfaces;
 using Ecommerce.Models.DTOs.CheckOut;
 using Microsoft.AspNetCore.Authorization;
@@ -25,13 +24,16 @@ namespace ECommerce.API.Controllers
             _hubContext = hubContext;
         }
 
+        [Authorize(Roles = "Customer")]
         [HttpPost]
         public async Task<IActionResult> Checkout(CheckoutRequest request)
         {
-            var result = await _checkoutService.CheckoutAsync(request.OrderId);
+            var result =
+                await _checkoutService.CheckoutAsync(request.OrderId);
 
             if (!result)
-                return BadRequest("Checkout failed. Order may not exist or is not pending.");
+                return BadRequest(
+                    "Checkout failed. Order may not exist or is not pending.");
 
             await _hubContext.Clients
                 .Group($"order-{request.OrderId}")
@@ -47,3 +49,4 @@ namespace ECommerce.API.Controllers
         }
     }
 }
+

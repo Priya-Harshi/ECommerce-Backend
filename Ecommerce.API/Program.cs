@@ -52,6 +52,8 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 
+builder.Services.AddScoped<BulkProductService>();
+
 builder.Services.AddHostedService<OrderBackgroundService>();
 
 
@@ -84,6 +86,13 @@ builder.Services.AddSwaggerGen(options =>
 //builder.Services.AddOpenApi();
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider
+        .GetRequiredService<ECommerceDbContext>();
+
+    await AdminSeeder.SeedAsync(context);
+}
 app.UseSwagger();
 app.UseSwaggerUI();
 

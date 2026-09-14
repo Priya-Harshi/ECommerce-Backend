@@ -1,7 +1,5 @@
 ﻿using Ecommerce.Business.Services.Interfaces;
 using Ecommerce.Models.Entities;
-using Ecommerce.Business.Services.Interfaces;
-using Ecommerce.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,12 +17,15 @@ namespace ECommerce.API.Controllers
             _paymentService = paymentService;
         }
 
+        [Authorize(Roles = "Customer")]
         [HttpPost]
         public async Task<IActionResult> ProcessPayment(Payment payment)
         {
             try
             {
-                var result = await _paymentService.ProcessPaymentAsync(payment);
+                var result =
+                    await _paymentService.ProcessPaymentAsync(payment);
+
                 return Ok(result);
             }
             catch (Exception ex)
@@ -36,7 +37,8 @@ namespace ECommerce.API.Controllers
         [HttpGet("order/{orderId}")]
         public async Task<IActionResult> GetPaymentByOrder(int orderId)
         {
-            var result = await _paymentService.GetPaymentByOrderIdAsync(orderId);
+            var result =
+                await _paymentService.GetPaymentByOrderIdAsync(orderId);
 
             if (result == null)
                 return NotFound();
@@ -45,3 +47,4 @@ namespace ECommerce.API.Controllers
         }
     }
 }
+

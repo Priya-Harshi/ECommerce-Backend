@@ -256,6 +256,12 @@ namespace ECommerce.Tests
         {
             return Task.FromResult(true);
         }
+        public Task<IEnumerable<Product>> AddRangeAsync(IEnumerable<Product> products)
+        {
+            var productList = products.ToList();
+
+            return Task.FromResult<IEnumerable<Product>>(productList);
+        }
     }
     public class FakeOrderRepository : IOrderRepository
     {

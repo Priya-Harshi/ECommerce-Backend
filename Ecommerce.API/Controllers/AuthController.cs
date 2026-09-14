@@ -1,5 +1,6 @@
 ﻿using Ecommerce.Business.Services.Interfaces;
 using Ecommerce.Models.DTOs.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers
@@ -15,6 +16,7 @@ namespace ECommerce.API.Controllers
             _authService = authService;
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequest request)
         {
@@ -28,6 +30,7 @@ namespace ECommerce.API.Controllers
             return Ok("Registration successful.");
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequest request)
         {

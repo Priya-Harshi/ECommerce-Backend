@@ -44,5 +44,16 @@ namespace Ecommerce.Data.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<IEnumerable<Product>> AddRangeAsync(IEnumerable<Product> products)
+        {
+            var productList = products.ToList();
+
+            await _context.Products.AddRangeAsync(productList);
+            await _context.SaveChangesAsync();
+
+            _context.ChangeTracker.Clear();
+
+            return productList;
+        }
     }
 }

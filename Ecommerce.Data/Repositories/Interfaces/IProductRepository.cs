@@ -12,5 +12,6 @@ namespace Ecommerce.Data.Repositories.Interfaces
         Task<Product> AddAsync(Product product);
         Task<Product> UpdateAsync(Product product);
         Task<bool> DeleteAsync(int id);
+        Task<IEnumerable<Product>> AddRangeAsync(IEnumerable<Product> products);
     }
 }

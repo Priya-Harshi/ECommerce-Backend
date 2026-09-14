@@ -2,6 +2,8 @@
 using Ecommerce.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Ecommerce.Business.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace ECommerce.API.Controllers
 {
@@ -11,10 +13,13 @@ namespace ECommerce.API.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
-
-        public ProductController(IProductService productService)
+        private readonly BulkProductService _bulkProductService;
+        public ProductController(
+        IProductService productService,
+        BulkProductService bulkProductService)
         {
             _productService = productService;
+            _bulkProductService = bulkProductService;
         }
 
         // GET: api/Product
@@ -41,6 +46,7 @@ namespace ECommerce.API.Controllers
         }
 
         // POST: api/Product
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create(Product product)
         {
@@ -60,6 +66,7 @@ namespace ECommerce.API.Controllers
         }
 
         // PUT: api/Product/1
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, Product product)
         {
@@ -82,6 +89,7 @@ namespace ECommerce.API.Controllers
         }
 
         // DELETE: api/Product/1
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -93,6 +101,26 @@ namespace ECommerce.API.Controllers
             }
 
             return NoContent();
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("bulk-upload")]
+        public async Task<IActionResult> BulkUpload(IFormFile file)
+        {
+            try
+            {
+                var products = await _bulkProductService.ImportProductsAsync(file);
+
+                return Ok(new
+                {
+                    Message = "Products uploaded successfully.",
+                    Count = products.Count()
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

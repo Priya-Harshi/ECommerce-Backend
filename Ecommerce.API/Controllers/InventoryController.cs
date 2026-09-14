@@ -1,9 +1,11 @@
 ﻿using Ecommerce.Business.Services.Interfaces;
 using Ecommerce.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ecommerce.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class InventoryController : ControllerBase
@@ -29,6 +31,7 @@ namespace Ecommerce.API.Controllers
             return Ok(inventory);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create(Inventory inventory)
         {
@@ -45,6 +48,7 @@ namespace Ecommerce.API.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{productId}")]
         public async Task<IActionResult> Update(
             int productId,
@@ -70,3 +74,4 @@ namespace Ecommerce.API.Controllers
         }
     }
 }
+

@@ -1,9 +1,8 @@
 ﻿using Ecommerce.Business.Services.Interfaces;
 using Ecommerce.Models.Entities;
-using Ecommerce.Business.Services.Interfaces;
-using Ecommerce.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ECommerce.API.Controllers
 {
@@ -19,10 +18,22 @@ namespace ECommerce.API.Controllers
             _orderService = orderService;
         }
 
+        [Authorize(Roles = "Customer")]
         [HttpPost]
         public async Task<IActionResult> CreateOrder(Order order)
         {
+            var userIdClaim =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            order.UserId = userId;
+
             var result = await _orderService.CreateOrderAsync(order);
+
             return Ok(result);
         }
 
@@ -34,13 +45,47 @@ namespace ECommerce.API.Controllers
             if (result == null)
                 return NotFound();
 
+            if (User.IsInRole("Customer"))
+            {
+                var userIdClaim =
+                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (!int.TryParse(userIdClaim, out int userId))
+                {
+                    return Unauthorized();
+                }
+
+                if (result.UserId != userId)
+                {
+                    return Forbid();
+                }
+            }
+
             return Ok(result);
         }
 
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetOrdersByUser(int userId)
         {
-            var result = await _orderService.GetOrdersByUserIdAsync(userId);
+            if (User.IsInRole("Customer"))
+            {
+                var userIdClaim =
+                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (!int.TryParse(userIdClaim, out int loggedInUserId))
+                {
+                    return Unauthorized();
+                }
+
+                if (userId != loggedInUserId)
+                {
+                    return Forbid();
+                }
+            }
+
+            var result =
+                await _orderService.GetOrdersByUserIdAsync(userId);
+
             return Ok(result);
         }
     }
