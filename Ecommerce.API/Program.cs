@@ -11,6 +11,17 @@ using Ecommerce.API.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// CORS - Allow React frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -56,7 +67,6 @@ builder.Services.AddScoped<BulkProductService>();
 
 builder.Services.AddHostedService<OrderBackgroundService>();
 
-
 builder.Services.AddDbContext<ECommerceDbContext>(options => options.UseSqlServer(
     builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -66,6 +76,7 @@ builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("bearer", new Microsoft.OpenApi.OpenApiSecurityScheme
@@ -82,10 +93,9 @@ builder.Services.AddSwaggerGen(options =>
             [new Microsoft.OpenApi.OpenApiSecuritySchemeReference("bearer", document)] = []
         });
 });
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-//builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider
@@ -93,16 +103,14 @@ using (var scope = app.Services.CreateScope())
 
     await AdminSeeder.SeedAsync(context);
 }
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.MapOpenApi();
-//}
-
 app.UseHttpsRedirection();
+
+// CORS must be before Authentication/Authorization
+app.UseCors("ReactPolicy");
 
 app.UseAuthentication();
 

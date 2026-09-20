@@ -83,7 +83,8 @@ namespace Ecommerce.Business.Services
                 UserId = user.Id,
                 Name = user.Name,
                 Email = user.Email,
-                Token = token
+                Token = token,
+                Role = user.Role
             };
         }
 
