@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ClosedXML.Excel;
+﻿using ClosedXML.Excel;
 using Ecommerce.Data.Repositories.Interfaces;
 using Ecommerce.Models.Entities;
 using Microsoft.AspNetCore.Http;
@@ -21,12 +18,14 @@ namespace Ecommerce.Business.Services
             _productRepository = productRepository;
             _cache = cache;
         }
+
         public async Task<IEnumerable<Product>> ImportProductsAsync(IFormFile file)
         {
             if (file == null || file.Length == 0)
             {
                 throw new ArgumentException("Excel file is empty.");
             }
+
             var extension = Path.GetExtension(file.FileName);
 
             if (!string.Equals(extension, ".xlsx", StringComparison.OrdinalIgnoreCase))
@@ -35,7 +34,7 @@ namespace Ecommerce.Business.Services
             }
 
             const int batchSize = 500;
-            var products = new List<Product>();
+
             var allProducts = new List<Product>();
 
             using var stream = file.OpenReadStream();
@@ -47,7 +46,8 @@ namespace Ecommerce.Business.Services
 
             if (rows == null)
             {
-                throw new ArgumentException("Excel file does not contain any products.");
+                throw new ArgumentException(
+                    "Excel file does not contain any products.");
             }
 
             var errors = new List<string>();
@@ -61,40 +61,47 @@ namespace Ecommerce.Business.Services
                 var priceText = row.Cell(3).GetString().Trim();
                 var stockText = row.Cell(4).GetString().Trim();
                 var activeText = row.Cell(5).GetString().Trim();
+                var imageUrl = row.Cell(6).GetString().Trim();
 
                 if (string.IsNullOrWhiteSpace(name))
                 {
-                    errors.Add($"Row {rowNumber}: Product name is required.");
+                    errors.Add(
+                        $"Row {rowNumber}: Product name is required.");
                     continue;
                 }
 
                 if (!decimal.TryParse(priceText, out decimal price))
                 {
-                    errors.Add($"Row {rowNumber}: Price must be a valid number.");
+                    errors.Add(
+                        $"Row {rowNumber}: Price must be a valid number.");
                     continue;
                 }
 
                 if (price < 0)
                 {
-                    errors.Add($"Row {rowNumber}: Price cannot be negative.");
+                    errors.Add(
+                        $"Row {rowNumber}: Price cannot be negative.");
                     continue;
                 }
 
                 if (!int.TryParse(stockText, out int stockQuantity))
                 {
-                    errors.Add($"Row {rowNumber}: StockQuantity must be a valid number.");
+                    errors.Add(
+                        $"Row {rowNumber}: StockQuantity must be a valid number.");
                     continue;
                 }
 
                 if (stockQuantity < 0)
                 {
-                    errors.Add($"Row {rowNumber}: StockQuantity cannot be negative.");
+                    errors.Add(
+                        $"Row {rowNumber}: StockQuantity cannot be negative.");
                     continue;
                 }
 
                 if (!bool.TryParse(activeText, out bool isActive))
                 {
-                    errors.Add($"Row {rowNumber}: IsActive must be TRUE or FALSE.");
+                    errors.Add(
+                        $"Row {rowNumber}: IsActive must be TRUE or FALSE.");
                     continue;
                 }
 
@@ -104,7 +111,8 @@ namespace Ecommerce.Business.Services
                     Description = description,
                     Price = price,
                     StockQuantity = stockQuantity,
-                    IsActive = isActive
+                    IsActive = isActive,
+                    ImageUrl = imageUrl
                 });
             }
 
@@ -117,9 +125,9 @@ namespace Ecommerce.Business.Services
 
             if (allProducts.Count == 0)
             {
-                throw new ArgumentException("No products found in Excel file.");
+                throw new ArgumentException(
+                    "No products found in Excel file.");
             }
-
 
             for (int i = 0; i < allProducts.Count; i += batchSize)
             {

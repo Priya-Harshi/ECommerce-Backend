@@ -82,8 +82,10 @@ namespace Ecommerce.Business.Services
             existingProduct.Price = product.Price;
             existingProduct.StockQuantity = product.StockQuantity;
             existingProduct.IsActive = product.IsActive;
+            existingProduct.ImageUrl = product.ImageUrl;
 
             var result = await _productRepository.UpdateAsync(existingProduct);
+
             _cache.Remove("products");
 
             return result;
